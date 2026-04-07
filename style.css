@@ -1,0 +1,6 @@
+button { margin-left: 10px; }
+input { margin-left: 40px; }
+.done {
+  color: grey;
+  text-decoration: line-through grey 1px;
+}
