@@ -3,19 +3,23 @@ const textInput = document.querySelector("#tasktextInput");
 const addBtn = document.querySelector("#addBtn");
 const resetBtn = document.querySelector("#resetBtn");
 
-const allBtn = document.querySelector("#all");
-const doneBtn = document.querySelector("#done");
-const inprogressBtn = document.querySelector("#inprogress");
-
-allBtn.addEventListener( "click", () => { filterType = "all"; loadLI(); } );
-doneBtn.addEventListener( "click", () => { filterType = "done"; loadLI(); } );
-inprogressBtn.addEventListener( "click", () => { filterType = "in progress"; loadLI(); } );
-
 let tasklist = [{
   title: "공부하기",
   done: false,
 }];
-let filterType = "all"
+let filterType = "all";
+
+function filterTask(list) {
+  switch ( filterType ) {
+    case "done":
+      return tasklist.filter( task => task.done );
+
+    case "in progress":
+      return tasklist.filter( task => !task.done );
+    
+    default: return list;
+  }
+}
 
 function loadLI() {
   [ ...list.children ].forEach( li => li.remove() )
@@ -34,40 +38,44 @@ function loadLI() {
   } );
 }
 
-function filterTask(list) {
-  switch ( filterType ) {
-    case "done":
-      return tasklist.filter( task => task.done );
+const allBtn = document.querySelector("#all");
+const doneBtn = document.querySelector("#done");
+const inprogressBtn = document.querySelector("#inprogress");
 
-    case "in progress":
-      return tasklist.filter( task => !task.done );
-    
-    default:
-      return list;
-  }
-}
-
-function appendNewLI() {
-  if ( getInputValue() ) {
-    const newLI = document.createElement("li");
-    
-    let title = getInputValue();
-    newLI.textContent = title;
-        
-    const newBtn = document.createElement("button");
-    newBtn.textContent = "✖";
-
-    newLI.appendChild(newBtn);
-    list.appendChild(newLI);
-    
-    tasklist.push( { title, done: false } );
-    
-    resetInputValue();
-  } else { alert("할 일을 입력하세요."); }
-}
+allBtn.addEventListener( "click", () => { filterType = "all"; loadLI(); } );
+doneBtn.addEventListener( "click", () => { filterType = "done"; loadLI(); } );
+inprogressBtn.addEventListener( "click", () => { filterType = "in progress"; loadLI(); } );
 
 function getInputValue() { return textInput.value.trim(); }
+
+function addtask() {
+  return new Promise( (resolve, reject) => {
+    if ( getInputValue() ) {
+      setTimeout( () => {
+        resolve();
+      }, 1000 )
+    } else { reject("할 일을 입력하세요."); }
+  } )
+}
+
 function resetInputValue() { textInput.value = ""; }
+
+function appendNewLI() {
+  const newLI = document.createElement("li");
+
+  let title = getInputValue();
+  newLI.textContent = title;
+
+  const newBtn = document.createElement("button");
+  newBtn.textContent = "✖";
+
+  newLI.appendChild(newBtn);
+  list.appendChild(newLI);
+  
+  tasklist.push( { title, done: false } );
+  
+  resetInputValue();
+}
 
 function getIndex(target) { return [ ...target.parentNode.children ].indexOf(target); }
 
@@ -86,7 +94,14 @@ list.addEventListener("click", event => {
   }
 });
 
-addBtn.addEventListener( "click", appendNewLI );
+addBtn.addEventListener( "click", () => {
+  addtask()
+    .then(appendNewLI)
+    .catch( error => {
+      alert(error);
+      console.log("할 일 입력 실패: " + error);
+    } );
+} );
 resetBtn.addEventListener( "click", resetInputValue );
 
 loadLI();
